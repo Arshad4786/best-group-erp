@@ -9,12 +9,17 @@ interface Project {
   name: string;
 }
 
+// --- UPDATED INTERFACE ---
 interface Labor {
   id: string;
   workerName: string;
   trade: string;
   status: string;
   projectId: string | null;
+  // Add these lines to accept the string dates
+  createdAt: string;
+  // Allow other fields from Prisma to pass through without errors
+  [key: string]: any; 
 }
 
 export default function LaborActions({ worker, projects }: { worker: Labor, projects: Project[] }) {

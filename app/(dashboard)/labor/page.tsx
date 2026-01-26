@@ -179,20 +179,20 @@ export default async function LaborManagement() {
                       {new Date(worker.createdAt).toLocaleDateString()}
                     </td>
 
-                    {/* ACTIONS (Fixed to handle serialization) */}
+                    {/* ACTIONS */}
                     <td className="px-6 py-4 text-right">
                       <LaborActions 
                         // Serialize the worker data to plain objects
                         worker={{
                           ...worker,
-                          createdAt: worker.createdAt.toISOString(), // Convert Date to string
-                          // Convert any Decimal types in the related project (if any) to numbers or remove them if unused by the component
+                          createdAt: worker.createdAt.toISOString(),                          
+                          // Project handling
                           project: worker.project ? {
                              ...worker.project,
                              value: Number(worker.project.value),
-                             createdAt: worker.project.createdAt.toISOString()
+                             createdAt: worker.project.createdAt.toISOString(),
+                             // REMOVED "updatedAt" HERE TO FIX ERROR
                           } : null,
-                          // Convert the worker's own decimals if any (none in this schema, but good practice)
                         }} 
                         projects={projects} 
                       />
