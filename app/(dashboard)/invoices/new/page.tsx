@@ -7,8 +7,19 @@ export default async function NewInvoicePage() {
   const projects = await prisma.project.findMany({ select: { id: true, name: true } });
   
   // FETCH COMPANIES (Subcompanies) INSTEAD OF CLIENTS
-  const companies = await prisma.company.findMany({ select: { id: true, name: true } });
-  
+  const companies = await prisma.company.findMany({ 
+    where: {
+      isActive: true // <--- ADD THIS FILTER
+    },
+    select: { 
+      id: true, 
+      name: true 
+    },
+    orderBy: {
+      name: 'asc' // Optional: Sorts the list alphabetically
+    }
+  });
+
   const count = await prisma.invoice.count();
   const newInvoiceNumber = `BGTINV${70700 + count + 1}`;
 

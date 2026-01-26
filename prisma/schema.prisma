@@ -26,6 +26,7 @@ model Company {
   name          String
   location      String    // Maps to "Office Address"
   isMaster      Boolean   @default(false)
+  isActive      Boolean   @default(true)
   
   // -- NEW: Business Details --
   vatNumber     String?
@@ -44,34 +45,49 @@ model Company {
   masterId      String?
   master        Company?  @relation("CompanyHierarchy", fields: [masterId], references: [id])
   employees     Employee[]
+  projects      Project[]
   
   createdAt     DateTime  @default(now())
   logoUrl       String?
 }
 
 model Project {
-  id               String   @id @default(uuid())
-  name             String
-  clientName       String
-  value            Decimal  @db.Decimal(12, 2)
-  status           String   @default("Active")
+  id             String   @id @default(uuid())
+  name           String
   
-  // New fields to match your screenshot requirements
-  duration         String?   // e.g. "3 months"
-  requiredManpower Int       @default(0)
-  progress       Int      @default(0)
+  // LEGACY: We keep clientName for backward compatibility, 
+  // but we will auto-fill it with the Company Name.
+  clientName     String   
   
-  createdAt        DateTime  @default(now())
-  invoices    Invoice[]
-  clientId    String?
-  client      Client?  @relation(fields: [clientId], references: [id])
+  // --- NEW RELATIONS & FIELDS ---
+  companyId      String?  
+  company        Company? @relation(fields: [companyId], references: [id])
+
+  contactPerson   String?
+  crNumber        String?
+  projectLocation String? 
+  address         String?
+  vatNumber       String?
+  // ------------------------------
+
+  value           Decimal  @db.Decimal(12, 2)
+  status          String   @default("Active")
+  duration        String?   
+  requiredManpower Int     @default(0)
+  progress        Int      @default(0)
+  
+  createdAt       DateTime  @default(now())
   
   // Relations
-  labor            Labor[]
-  expenses         Expense[]
+  invoices        Invoice[]
+  // Note: Remove 'clientId' and 'client' if you aren't using the Client model anymore, 
+  // or keep them optional for legacy data.
+  clientId        String?
+  client          Client?  @relation(fields: [clientId], references: [id])
   
-  // FIXED: Added relation to Employees
-  employees        Employee[]
+  labor           Labor[]
+  expenses        Expense[]
+  employees       Employee[]
 }
 
 model Labor {

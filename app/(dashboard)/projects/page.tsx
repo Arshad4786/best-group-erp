@@ -6,17 +6,28 @@ import {
   Plus, 
   Target, 
   Clock,
-  CheckCircle2,
-  Briefcase
+  CheckCircle2
 } from "lucide-react";
 
+// Ensure fresh data is fetched on every visit
+export const dynamic = "force-dynamic";
+
 export default async function ProjectManagement() {
-  // 1. FETCH DATA
+  // 1. FETCH PROJECTS
+  // Include 'company' to get the linked Subcompany details
   const projects = await prisma.project.findMany({
     orderBy: { createdAt: "desc" },
+    include: { company: true } 
   });
 
-  // 2. KPI CALCULATIONS
+  // 2. FETCH COMPANIES (Required for the Edit Dropdown)
+  const companies = await prisma.company.findMany({
+    where: { isActive: true },
+    orderBy: { name: "asc" },
+    select: { id: true, name: true, isMaster: true }
+  });
+
+  // 3. KPI CALCULATIONS
   const totalProjects = projects.length;
   const activeProjects = projects.filter(p => p.status === "Active").length;
   const completedProjects = projects.filter(p => p.status === "Completed").length;
@@ -25,7 +36,7 @@ export default async function ProjectManagement() {
   return (
     <div className="space-y-8">
 
-      {/* 1. HEADER BANNER (RESTORED: Your Exact Blue/Indigo Theme) */}
+      {/* 1. HEADER BANNER */}
       <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl p-8 text-white shadow-xl flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold mb-2 flex items-center gap-3">
@@ -46,7 +57,7 @@ export default async function ProjectManagement() {
         </Link>
       </div>
 
-      {/* 2. KPI OVERVIEW (RESTORED: Your Exact Colored Cards) */}
+      {/* 2. KPI OVERVIEW */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         {[
           { label: "Total Projects", val: totalProjects, icon: FolderKanban, bg: "bg-blue-500" },
@@ -71,7 +82,7 @@ export default async function ProjectManagement() {
         ))}
       </div>
 
-      {/* 3. PROJECT TABLE (UPDATED: Columns match your Screenshot Requirement) */}
+      {/* 3. PROJECT TABLE */}
       <div className="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
         
         {/* Table Title Bar */}
@@ -100,8 +111,8 @@ export default async function ProjectManagement() {
               <thead className="bg-slate-50 text-xs text-slate-500 uppercase font-semibold">
                 <tr>
                   <th className="px-6 py-4">Project Name</th>
-                  <th className="px-6 py-4">Client</th>
-                  <th className="px-6 py-4">Engineer</th>
+                  <th className="px-6 py-4">Company</th>
+                  <th className="px-6 py-4">Contact Person</th>
                   <th className="px-6 py-4">Duration</th>
                   <th className="px-6 py-4">Manpower</th>
                   <th className="px-6 py-4">Status</th>
@@ -117,43 +128,53 @@ export default async function ProjectManagement() {
                       {proj.name}
                     </td>
 
-                    {/* Client */}
+                    {/* Company (Linked Subcompany or Fallback) */}
                     <td className="px-6 py-4 text-slate-600">
-                      {proj.clientName}
+                      {proj.company ? proj.company.name : proj.clientName}
                     </td>
 
-                    {/* Engineer */}
+                    {/* Contact Person */}
                     <td className="px-6 py-4 text-slate-600">
-                      engineer-1
+                      {proj.contactPerson || "-"}
                     </td>
 
-                    {/* Duration (New Column) */}
+                    {/* Duration */}
                     <td className="px-6 py-4 text-slate-600">
                       {proj.duration || "N/A"}
                     </td>
 
-                    {/* Manpower (New Column) */}
+                    {/* Manpower */}
                     <td className="px-6 py-4 text-slate-600">
                       {proj.requiredManpower}
                     </td>
 
                     {/* Status */}
                     <td className="px-6 py-4">
-                       <span className={`px-3 py-1 rounded-full text-xs font-medium border ${
-                         proj.status === 'Active' ? 'bg-green-50 text-green-700 border-green-200' : 
-                         proj.status === 'Completed' ? 'bg-blue-50 text-blue-700 border-blue-200' :
-                         'bg-amber-50 text-amber-700 border-amber-200'
-                      }`}>
-                        {proj.status}
-                      </span>
+                        <span className={`px-3 py-1 rounded-full text-xs font-medium border ${
+                          proj.status === 'Active' ? 'bg-green-50 text-green-700 border-green-200' : 
+                          proj.status === 'Completed' ? 'bg-blue-50 text-blue-700 border-blue-200' :
+                          'bg-amber-50 text-amber-700 border-amber-200'
+                       }`}>
+                         {proj.status}
+                       </span>
                     </td>
 
-                    {/* ACTIONS: Your Custom Component */}
+                    {/* ACTIONS */}
                     <td className="px-6 py-4 text-center">
                       <ProjectActions 
+                        // PASS COMPANIES for the Edit Dropdown
+                        companies={companies}
                         project={{
                           ...proj,
-                          value: Number(proj.value)
+                          // Important: Convert Decimal to Number for Client Component
+                          value: Number(proj.value),
+                          // Important: Convert Date to string for Client Component
+                          createdAt: proj.createdAt.toISOString(),
+                          // Handle nested Company date serialization
+                          company: proj.company ? {
+                            ...proj.company,
+                            createdAt: proj.company.createdAt.toISOString(),
+                          } : null
                         }} 
                       />
                     </td>

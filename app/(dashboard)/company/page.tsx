@@ -5,8 +5,12 @@ import {
   Building2, 
   MapPin, 
   CheckCircle2, 
+  XCircle,
   Plus 
 } from "lucide-react";
+
+// Fix: Force fresh data so status changes reflect immediately
+export const dynamic = "force-dynamic";
 
 export default async function CompanyManagement() {
   // 1. FETCH DATA
@@ -22,6 +26,9 @@ export default async function CompanyManagement() {
   const totalMaster = masterCompanies.length;
   const totalSub = subCompanies.length;
   const uniqueLocations = new Set(companies.map(c => c.location)).size;
+  
+  // Overall System Status Logic
+  const activeSystem = companies.some(c => c.isActive) ? "Active" : "Inactive";
 
   return (
     <div className="space-y-8">
@@ -85,7 +92,7 @@ export default async function CompanyManagement() {
         <div className="bg-purple-600 rounded-xl p-6 text-white shadow-lg relative overflow-hidden">
           <div className="relative z-10">
             <p className="text-purple-100 text-sm font-medium mb-1">System Status</p>
-            <h3 className="text-2xl font-bold">Active</h3>
+            <h3 className="text-2xl font-bold">{activeSystem}</h3>
           </div>
           <div className="absolute right-4 bottom-4 p-2 bg-white/20 rounded-lg">
             <CheckCircle2 className="w-6 h-6 text-white" />
@@ -116,19 +123,29 @@ export default async function CompanyManagement() {
                 <tr><td colSpan={4} className="p-6 text-center text-slate-400">No Master Company Set</td></tr>
               ) : (
                 masterCompanies.map((company) => (
-                  <tr key={company.id} className="hover:bg-slate-50/50 transition-colors">
+                  <tr key={company.id} className={`transition-colors ${company.isActive ? 'hover:bg-slate-50/50' : 'bg-slate-50 opacity-70'}`}>
                     <td className="px-6 py-4 font-bold text-slate-900">{company.name}</td>
                     <td className="px-6 py-4 text-slate-500 flex items-center gap-2">
                       <MapPin className="w-4 h-4 text-slate-400" />
                       {company.location}
                     </td>
                     <td className="px-6 py-4">
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                        Active
-                      </span>
+                      {company.isActive ? (
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                          <CheckCircle2 className="w-3 h-3 mr-1" /> Active
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-600">
+                          <XCircle className="w-3 h-3 mr-1" /> Inactive
+                        </span>
+                      )}
                     </td>
                     <td className="px-6 py-4 text-right">
-                      <CompanyActions id={company.id} />
+                      {/* UPDATED: Pass full object + serialize date */}
+                      {/* <CompanyActions company={{
+                        ...company,
+                        createdAt: company.createdAt.toISOString()
+                      }} /> */}
                     </td>
                   </tr>
                 ))
@@ -161,19 +178,29 @@ export default async function CompanyManagement() {
                 <tr><td colSpan={4} className="p-6 text-center text-slate-400">No Sub-Companies Found</td></tr>
               ) : (
                 subCompanies.map((company) => (
-                  <tr key={company.id} className="hover:bg-slate-50/50 transition-colors">
+                  <tr key={company.id} className={`transition-colors ${company.isActive ? 'hover:bg-slate-50/50' : 'bg-slate-50 opacity-70'}`}>
                     <td className="px-6 py-4 font-medium text-slate-900">{company.name}</td>
                     <td className="px-6 py-4 text-slate-500 flex items-center gap-2">
                       <MapPin className="w-4 h-4 text-slate-400" />
                       {company.location}
                     </td>
                     <td className="px-6 py-4">
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                        Active
-                      </span>
+                      {company.isActive ? (
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                          Active
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-600">
+                          Inactive
+                        </span>
+                      )}
                     </td>
                     <td className="px-6 py-4 text-right">
-                      <CompanyActions id={company.id} />
+                      {/* UPDATED: Pass full object + serialize date */}
+                      <CompanyActions company={{
+                        ...company,
+                        createdAt: company.createdAt.toISOString()
+                      }} />
                     </td>
                   </tr>
                 ))

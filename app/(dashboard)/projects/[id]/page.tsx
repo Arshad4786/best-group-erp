@@ -16,6 +16,8 @@ interface ProjectPageProps {
   params: Promise<{ id: string }>;
 }
 
+export const dynamic = "force-dynamic";
+
 export default async function ProjectDetailPage({ params }: ProjectPageProps) {
   const { id } = await params;
 
@@ -23,8 +25,10 @@ export default async function ProjectDetailPage({ params }: ProjectPageProps) {
   const project = await prisma.project.findUnique({
     where: { id },
     include: {
-      // FIX: Sort by 'date' to prevent the "Unknown Argument" error
-      expenses: { orderBy: { date: "desc" } }
+      // Sort by 'date' to prevent the "Unknown Argument" error
+      expenses: { orderBy: { date: "desc" } },
+      // Include Company details
+      company: true
     }
   });
 
@@ -39,7 +43,7 @@ export default async function ProjectDetailPage({ params }: ProjectPageProps) {
   return (
     <div className="space-y-8 max-w-7xl mx-auto">
 
-      {/* HEADER BANNER (ERP STYLE) */}
+      {/* HEADER BANNER */}
       <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl p-8 text-white shadow-xl flex justify-between items-center">
         <div>
           <Link
@@ -63,7 +67,7 @@ export default async function ProjectDetailPage({ params }: ProjectPageProps) {
 
           <p className="text-blue-100 mt-1 flex items-center gap-2">
             <Briefcase className="w-4 h-4" />
-            {project.clientName}
+            {project.company ? project.company.name : project.clientName}
           </p>
         </div>
 
@@ -75,6 +79,44 @@ export default async function ProjectDetailPage({ params }: ProjectPageProps) {
           Add Expense
         </Link>
       </div>
+
+      {/* PROJECT INFO CARDS (NEW SECTION) */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+           <h3 className="font-bold text-slate-800 mb-4 border-b pb-2">Project Details</h3>
+           <div className="space-y-3 text-sm">
+              <div className="flex justify-between">
+                 <span className="text-slate-500">Location:</span>
+                 <span className="font-medium text-slate-900">{project.projectLocation || "N/A"}</span>
+              </div>
+              <div className="flex justify-between">
+                 <span className="text-slate-500">CR Number:</span>
+                 <span className="font-medium text-slate-900">{project.crNumber || "N/A"}</span>
+              </div>
+              <div className="flex justify-between">
+                 <span className="text-slate-500">VAT Number:</span>
+                 <span className="font-medium text-slate-900">{project.vatNumber || "N/A"}</span>
+              </div>
+           </div>
+        </div>
+        <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+           <h3 className="font-bold text-slate-800 mb-4 border-b pb-2">Client Contact</h3>
+           <div className="space-y-3 text-sm">
+               <div className="flex justify-between">
+                 <span className="text-slate-500">Company:</span>
+                 <span className="font-medium text-slate-900">{project.company?.name || project.clientName}</span>
+              </div>
+              <div className="flex justify-between">
+                 <span className="text-slate-500">Contact Person:</span>
+                 <span className="font-medium text-slate-900">{project.contactPerson || "N/A"}</span>
+              </div>
+              <div className="flex justify-between">
+                 <span className="text-slate-500">Address:</span>
+                 <span className="font-medium text-slate-900 text-right max-w-[200px]">{project.address || "N/A"}</span>
+              </div>
+           </div>
+        </div>
+     </div>
 
       {/* KPI CARDS */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
@@ -180,11 +222,9 @@ export default async function ProjectDetailPage({ params }: ProjectPageProps) {
                     </td>
                     <td className="px-6 py-4 text-slate-500 flex items-center gap-2">
                       <Calendar className="w-3 h-3" />
-                      {/* FIX: Use 'date' instead of 'createdAt' */}
                       {new Date(exp.date).toLocaleDateString()}
                     </td>
                     <td className="px-6 py-4 text-right font-mono font-semibold text-slate-700">
-                      {/* FIX: Convert Decimal to Number for display */}
                       - SAR {Number(exp.amount).toLocaleString()}
                     </td>
                   </tr>

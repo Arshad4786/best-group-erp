@@ -4,7 +4,13 @@ import { ArrowLeft, UserPlus, Briefcase, User } from "lucide-react";
 import Link from "next/link";
 
 export default async function NewEmployeePage() {
-  const companies = await prisma.company.findMany();
+const companies = await prisma.company.findMany({
+    where: { 
+      isActive: true, // <--- THIS FILTERS OUT INACTIVE COMPANIES
+      // isMaster: false // Optional: If you only want sub-companies
+    },
+    orderBy: { name: "asc" }
+  });
   const projects = await prisma.project.findMany();
 
   return (

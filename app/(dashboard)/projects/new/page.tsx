@@ -1,12 +1,26 @@
 import { createProject } from "@/app/actions/project";
-import { LayoutGrid, ArrowLeft, Save, Clock, Users, FolderKanban } from "lucide-react";
+import { FolderKanban, ArrowLeft, Save } from "lucide-react";
 import Link from "next/link";
+import prisma from "@/lib/db";
 
-export default function NewProjectPage() {
+// Force dynamic because we are fetching companies from DB
+export const dynamic = "force-dynamic";
+
+export default async function NewProjectPage() {
+  // Fetch Active Sub-Companies for the dropdown
+  const companies = await prisma.company.findMany({
+    where: { 
+      isActive: true,
+      // If you ONLY want subcompanies (not master), uncomment below:
+      // isMaster: false 
+    },
+    orderBy: { name: "asc" }
+  });
+
   return (
-    <div className="max-w-4xl mx-auto space-y-8">
+    <div className="max-w-5xl mx-auto space-y-8 pb-12">
       
-      {/* HEADER BANNER (Updated to match Blue Theme) */}
+      {/* HEADER BANNER */}
       <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl p-8 text-white shadow-xl">
         <Link 
           href="/projects" 
@@ -16,107 +30,136 @@ export default function NewProjectPage() {
         </Link>
         <h1 className="text-3xl font-bold flex items-center gap-3">
           <FolderKanban className="w-8 h-8" />
-          Initialize New Project
+          Add Project
         </h1>
-        <p className="text-blue-100 opacity-90 mt-2">
-          Create a new entry in the financial ledger
-        </p>
       </div>
 
-      {/* FORM CARD */}
+      {/* FORM MATCHING SCREENSHOT */}
       <div className="bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden">
-        
-        <form action={createProject} className="p-8 space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <form action={createProject} className="p-8">
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
             
-            {/* Project Name */}
-            <div className="space-y-2">
-              <label className="text-sm font-semibold text-slate-700">Project Name</label>
-              <input
-                name="name"
-                required
-                placeholder="e.g. Neom City Phase 1"
-                // Added text-slate-900 to ensure text is BLACK and visible
-                className="w-full px-4 py-3 rounded-xl border border-slate-200 text-slate-900 font-medium placeholder:text-slate-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
-              />
-            </div>
-
-            {/* Client Name */}
-            <div className="space-y-2">
-              <label className="text-sm font-semibold text-slate-700">Client Organization</label>
-              <input
-                name="clientName"
-                required
-                placeholder="e.g. Public Investment Fund"
-                // Added text-slate-900
-                className="w-full px-4 py-3 rounded-xl border border-slate-200 text-slate-900 font-medium placeholder:text-slate-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
-              />
-            </div>
-
-            {/* Contract Value */}
-            <div className="space-y-2 md:col-span-2">
-              <label className="text-sm font-semibold text-slate-700">Total Contract Value (SAR)</label>
-              <div className="relative">
-                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold">SAR</span>
+            {/* LEFT COLUMN */}
+            <div className="space-y-6">
+              
+              <div className="space-y-2">
+                <label className="text-sm font-semibold text-slate-700 flex gap-1">
+                   Project Name: <span className="text-red-500">*</span>
+                </label>
                 <input
-                  name="value"
-                  type="number"
+                  name="name"
                   required
-                  placeholder="0.00"
-                  // Added text-slate-900
-                  className="w-full pl-14 pr-4 py-3 rounded-xl border border-slate-200 text-slate-900 font-medium placeholder:text-slate-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+                  className="w-full px-4 py-2.5 rounded-lg border border-slate-300 text-slate-900 focus:ring-2 focus:ring-blue-500 outline-none"
                 />
               </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-semibold text-slate-700 flex gap-1">
+                   Select Company: <span className="text-red-500">*</span>
+                </label>
+                <select
+                  name="companyId"
+                  required
+                  defaultValue=""
+                  className="w-full px-4 py-2.5 rounded-lg border border-slate-300 text-slate-900 focus:ring-2 focus:ring-blue-500 outline-none bg-white"
+                >
+                  <option value="" disabled>Select Company</option>
+                  {companies.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.name} {c.isMaster ? "(Master)" : ""}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-semibold text-slate-700">Project Location:</label>
+                <input
+                  name="projectLocation"
+                  className="w-full px-4 py-2.5 rounded-lg border border-slate-300 text-slate-900 focus:ring-2 focus:ring-blue-500 outline-none"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-semibold text-slate-700">VAT Number:</label>
+                <input
+                  name="vatNumber"
+                  className="w-full px-4 py-2.5 rounded-lg border border-slate-300 text-slate-900 focus:ring-2 focus:ring-blue-500 outline-none"
+                />
+              </div>
+
+               {/* Original Fields kept for logic */}
+               <div className="pt-4 border-t border-slate-100 mt-4">
+                  <p className="text-xs font-bold text-slate-400 uppercase mb-3">Internal Details</p>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                        <label className="text-sm font-semibold text-slate-700">Contract Value (SAR)</label>
+                        <input name="value" type="number" step="0.01" className="w-full px-4 py-2 border border-slate-300 rounded-lg text-slate-900" />
+                    </div>
+                    <div className="space-y-2">
+                        <label className="text-sm font-semibold text-slate-700">Manpower</label>
+                        <input name="requiredManpower" type="number" className="w-full px-4 py-2 border border-slate-300 rounded-lg text-slate-900" />
+                    </div>
+                  </div>
+               </div>
+
             </div>
 
-            {/* NEW: Duration */}
-            <div className="space-y-2">
-              <label className="text-sm font-semibold text-slate-700">Project Duration</label>
-              <div className="relative">
-                <Clock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+            {/* RIGHT COLUMN */}
+            <div className="space-y-6">
+              
+              <div className="space-y-2">
+                <label className="text-sm font-semibold text-slate-700">Contact Person:</label>
                 <input
+                  name="contactPerson"
+                  placeholder="Enter contact person name"
+                  className="w-full px-4 py-2.5 rounded-lg border border-slate-300 text-slate-900 focus:ring-2 focus:ring-blue-500 outline-none"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-semibold text-slate-700">CR Number:</label>
+                <input
+                  name="crNumber"
+                  placeholder="Enter CR Number here"
+                  className="w-full px-4 py-2.5 rounded-lg border border-slate-300 text-slate-900 focus:ring-2 focus:ring-blue-500 outline-none"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-semibold text-slate-700">Address:</label>
+                <textarea
+                  name="address"
+                  rows={4}
+                  placeholder="Enter Office Address"
+                  className="w-full px-4 py-2.5 rounded-lg border border-slate-300 text-slate-900 focus:ring-2 focus:ring-blue-500 outline-none resize-none"
+                />
+              </div>
+              
+               <div className="space-y-2">
+                <label className="text-sm font-semibold text-slate-700">Duration:</label>
+                 <input
                   name="duration"
-                  placeholder="e.g. 18 months"
-                  // Added text-slate-900
-                  className="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-200 text-slate-900 font-medium placeholder:text-slate-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+                   placeholder="e.g. 12 Months"
+                  className="w-full px-4 py-2.5 rounded-lg border border-slate-300 text-slate-900 focus:ring-2 focus:ring-blue-500 outline-none"
                 />
               </div>
-            </div>
 
-            {/* NEW: Required Manpower */}
-            <div className="space-y-2">
-              <label className="text-sm font-semibold text-slate-700">Required Manpower</label>
-              <div className="relative">
-                <Users className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                <input
-                  name="requiredManpower"
-                  type="number"
-                  placeholder="e.g. 50"
-                  // Added text-slate-900
-                  className="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-200 text-slate-900 font-medium placeholder:text-slate-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
-                />
-              </div>
             </div>
 
           </div>
 
-          <div className="pt-4 flex justify-end">
+          <div className="pt-8 mt-6 border-t border-slate-100">
             <button
               type="submit"
-              className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-xl font-bold shadow-lg shadow-blue-200 flex items-center gap-2 transition-all active:scale-95"
+              className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg font-bold shadow-lg shadow-blue-200 flex items-center gap-2 transition-all active:scale-95"
             >
               <Save className="w-5 h-5" />
-              Register Project
+              Add Project
             </button>
           </div>
         </form>
-      </div>
-
-      <div className="bg-blue-50 border border-blue-100 rounded-xl p-4 flex items-start gap-3">
-        <LayoutGrid className="w-5 h-5 text-blue-500 mt-0.5" />
-        <p className="text-sm text-blue-700">
-          <strong>System Note:</strong> Registering will initialize the financial ledger. Duration and Manpower estimates are for planning purposes only.
-        </p>
       </div>
     </div>
   );

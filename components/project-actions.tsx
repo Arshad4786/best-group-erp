@@ -1,25 +1,39 @@
 "use client";
 
 import { useState } from "react";
-import { Pencil, Trash2, X } from "lucide-react";
-import { updateProject, deleteProject } from "@/app/actions/project"; // Import deleteProject
+import { Pencil, Trash2, X, Save } from "lucide-react";
+import { updateProject, deleteProject } from "@/app/actions/project";
+
+interface CompanyOption {
+  id: string;
+  name: string;
+  isMaster: boolean;
+}
 
 interface Project {
   id: string;
   name: string;
   clientName: string;
+  companyId?: string | null; // Added field
   value: number;
   status: string;
-  duration?: string | null;          // Added to match new schema
-  requiredManpower?: number | null;  // Added to match new schema
+  duration?: string | null;
+  requiredManpower?: number | null;
+  [key: string]: any; 
 }
 
-export default function ProjectActions({ project }: { project: Project }) {
+export default function ProjectActions({ 
+  project, 
+  companies 
+}: { 
+  project: Project; 
+  companies: CompanyOption[]; // New Prop
+}) {
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
   async function handleDelete() {
-    if (confirm("Are you sure you want to delete this project? This action cannot be undone.")) {
+    if (confirm("Are you sure you want to delete this project?")) {
       setIsDeleting(true);
       const formData = new FormData();
       formData.append("id", project.id);
@@ -30,7 +44,7 @@ export default function ProjectActions({ project }: { project: Project }) {
 
   return (
     <>
-      {/* 1. THE ACTION BUTTONS */}
+      {/* 1. ACTION BUTTONS */}
       <div className="flex items-center justify-center gap-2">
         <button
           onClick={() => setIsEditOpen(true)}
@@ -50,23 +64,18 @@ export default function ProjectActions({ project }: { project: Project }) {
         </button>
       </div>
 
-      {/* 2. THE EDIT MODAL (Kept exactly as you designed) */}
+      {/* 2. EDIT MODAL */}
       {isEditOpen && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
           <div className="bg-white rounded-xl shadow-xl w-full max-w-lg overflow-hidden animate-in fade-in zoom-in duration-200">
             
-            {/* Modal Header */}
-            <div className="flex justify-between items-center p-6 border-b border-slate-100">
-              <h3 className="text-xl font-bold text-slate-900">Edit Item</h3>
-              <button 
-                onClick={() => setIsEditOpen(false)}
-                className="text-slate-400 hover:text-slate-600"
-              >
+            <div className="flex justify-between items-center p-6 border-b border-slate-100 bg-slate-50/50">
+              <h3 className="text-xl font-bold text-slate-900">Edit Project</h3>
+              <button onClick={() => setIsEditOpen(false)} className="text-slate-400 hover:text-slate-600">
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            {/* Modal Form */}
             <form action={async (formData) => {
               await updateProject(formData);
               setIsEditOpen(false);
@@ -74,52 +83,61 @@ export default function ProjectActions({ project }: { project: Project }) {
               
               <input type="hidden" name="id" value={project.id} />
 
+              {/* Project Name */}
               <div className="space-y-1">
-                <label className="text-sm font-semibold text-slate-900">Project Name</label>
+                <label className="text-xs font-bold text-slate-500 uppercase">Project Name</label>
                 <input 
                   name="name"
                   defaultValue={project.name}
-                  className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-black outline-none"
+                  className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm text-slate-900 focus:ring-2 focus:ring-blue-500 outline-none"
                 />
               </div>
 
+              {/* Company Selection Dropdown */}
               <div className="space-y-1">
-                <label className="text-sm font-semibold text-slate-900">Client Name</label>
-                <input 
-                  name="clientName"
-                  defaultValue={project.clientName}
-                  className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-black outline-none"
-                />
+                <label className="text-xs font-bold text-slate-500 uppercase">Company / Client</label>
+                <select 
+                  name="companyId"
+                  defaultValue={project.companyId || ""}
+                  className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm text-slate-900 focus:ring-2 focus:ring-blue-500 outline-none bg-white"
+                >
+                  <option value="" disabled>Select Company</option>
+                  {companies.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.name} {c.isMaster ? "(Master)" : ""}
+                    </option>
+                  ))}
+                </select>
               </div>
 
-              {/* Added Duration & Manpower to Edit Form to match your new fields */}
+              {/* Duration & Manpower */}
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1">
-                  <label className="text-sm font-semibold text-slate-900">Duration</label>
+                  <label className="text-xs font-bold text-slate-500 uppercase">Duration</label>
                   <input 
                     name="duration"
                     defaultValue={project.duration || ""}
-                    placeholder="e.g. 6 months"
-                    className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-black outline-none"
+                    className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm text-slate-900 focus:ring-2 focus:ring-blue-500 outline-none"
                   />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-sm font-semibold text-slate-900">Manpower</label>
+                  <label className="text-xs font-bold text-slate-500 uppercase">Manpower</label>
                   <input 
                     name="requiredManpower"
                     type="number"
                     defaultValue={project.requiredManpower || 0}
-                    className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-black outline-none"
+                    className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm text-slate-900 focus:ring-2 focus:ring-blue-500 outline-none"
                   />
                 </div>
               </div>
 
+              {/* Status */}
               <div className="space-y-1">
-                <label className="text-sm font-semibold text-slate-900">Status</label>
+                <label className="text-xs font-bold text-slate-500 uppercase">Status</label>
                 <select 
                   name="status" 
                   defaultValue={project.status}
-                  className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-black outline-none bg-white"
+                  className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm text-slate-900 focus:ring-2 focus:ring-blue-500 outline-none bg-white"
                 >
                   <option value="Active">Active</option>
                   <option value="Completed">Completed</option>
@@ -127,19 +145,20 @@ export default function ProjectActions({ project }: { project: Project }) {
                 </select>
               </div>
 
-              <div className="flex justify-end gap-3 mt-6 pt-2">
+              <div className="flex justify-end gap-3 mt-6 pt-4 border-t border-slate-100">
                 <button
                   type="button"
                   onClick={() => setIsEditOpen(false)}
-                  className="px-4 py-2 border border-slate-300 rounded-lg text-sm font-semibold text-slate-700 hover:bg-slate-50"
+                  className="px-4 py-2 border border-slate-200 rounded-lg text-sm font-semibold text-slate-600 hover:bg-slate-50"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-black text-white rounded-lg text-sm font-semibold hover:bg-slate-800"
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-semibold hover:bg-blue-700 flex items-center gap-2"
                 >
-                  Update Item
+                  <Save className="w-4 h-4" />
+                  Update Project
                 </button>
               </div>
 
