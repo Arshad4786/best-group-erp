@@ -176,8 +176,7 @@ export default async function EngineerDashboard() {
                 <td className="px-6 py-4 font-mono text-slate-500">{q.quoteNumber}</td>
                 <td className="px-6 py-4 font-medium text-slate-900">{q.project}</td>
                 <td className="px-6 py-4 text-slate-600">{q.manpower}</td>
-                <td className="px-6 py-4 font-bold text-slate-900">SAR {Number(q.amount).toLocaleString()}</td>
-                <td className="px-6 py-4">
+                <td className="px-6 py-4 font-bold text-slate-900">SAR {Number(q.totalAmount).toLocaleString()}</td>                <td className="px-6 py-4">
                   <span className={`px-3 py-1 rounded-full text-xs font-bold ${
                     q.status === 'Approved' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'
                   }`}>
