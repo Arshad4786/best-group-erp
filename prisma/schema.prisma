@@ -8,8 +8,6 @@ generator client {
 // PRISMA 7 RULE: No URLs here. Just the provider.
 datasource db {
   provider = "postgresql"
-  url       = env("DATABASE_URL") 
-  directUrl = env("DIRECT_URL")   
 }
 
 // 2. DATA MODELS
