@@ -1,0 +1,267 @@
+// 1. Configuration
+generator client {
+  provider = "prisma-client-js"
+  // Keep driverAdapters since you are using the Node 20 / pg-adapter setup
+  previewFeatures = ["driverAdapters"]
+}
+
+// PRISMA 7 RULE: No URLs here. Just the provider.
+datasource db {
+  provider = "postgresql"
+}
+
+// 2. DATA MODELS
+
+model User {
+  id        String   @id @default(uuid())
+  name      String
+  email     String   @unique
+  password  String   // In a real app, hash this!
+  role      String   // "ADMIN" or "ENGINEER"
+  createdAt DateTime @default(now())
+}
+
+model Company {
+  id            String    @id @default(uuid())
+  name          String
+  location      String    // Maps to "Office Address"
+  isMaster      Boolean   @default(false)
+  
+  // -- NEW: Business Details --
+  vatNumber     String?
+  email         String?
+  phone         String?
+  invoices Invoice[]
+  
+  // -- NEW: Bank Details --
+  iban          String?
+  bankName      String?
+  accountName   String?
+  accountNumber String?
+
+  // Relations
+  subCompanies  Company[] @relation("CompanyHierarchy")
+  masterId      String?
+  master        Company?  @relation("CompanyHierarchy", fields: [masterId], references: [id])
+  employees     Employee[]
+  
+  createdAt     DateTime  @default(now())
+  logoUrl       String?
+}
+
+model Project {
+  id               String   @id @default(uuid())
+  name             String
+  clientName       String
+  value            Decimal  @db.Decimal(12, 2)
+  status           String   @default("Active")
+  
+  // New fields to match your screenshot requirements
+  duration         String?   // e.g. "3 months"
+  requiredManpower Int       @default(0)
+  
+  createdAt        DateTime  @default(now())
+  invoices    Invoice[]
+  clientId    String?
+  client      Client?  @relation(fields: [clientId], references: [id])
+  
+  // Relations
+  labor            Labor[]
+  expenses         Expense[]
+  
+  // FIXED: Added relation to Employees
+  employees        Employee[]
+}
+
+model Labor {
+  id         String   @id @default(uuid())
+  workerName String
+  workerId   String   @unique // e.g., LAB-8801
+  trade      String   // Mason, Electrician, etc.
+  status     String   @default("Available") // Deployed, Available, On Leave
+  
+  projectId  String?
+  project    Project? @relation(fields: [projectId], references: [id])
+  
+  createdAt  DateTime @default(now())
+}
+
+
+model Quotation {
+  id             String   @id @default(uuid())
+  quoteNumber    String   @unique
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  
+  status         String   @default("Pending") // Pending, Approved, Rejected
+  
+  quotationFor   String   // Client Name
+  attention      String?  // Attention Person
+  location       String?
+  issueDate      DateTime @default(now())
+  
+  project        String   // Subject / Project Name
+  workingHours   String?  // "10 hours a day"
+  specialArticle String?  // Any special notes
+  rateType       String   @default("HOUR") // HOUR or MONTH
+  
+  firstParty     String?  // "Best Group LLC"
+  duration       String?  // "5 Months"
+  invoiceDays    String?  // "30 Days"
+  
+  quotationBy    String   // Engineer Name
+  contactNo      String?
+  contactEmail   String?
+  
+  // -- Calculated / Legacy --
+  totalAmount    Decimal  @default(0) // For the dashboard stats
+  manpower       Int      @default(0) // For dashboard stats
+
+  // -- Relations --
+  items          QuotationItem[]
+}
+
+model QuotationItem {
+  id          String    @id @default(uuid())
+  quotationId String
+  quotation   Quotation @relation(fields: [quotationId], references: [id], onDelete: Cascade)
+  
+  description String
+  rate        Decimal
+  
+  createdAt   DateTime  @default(now())
+}
+
+model Expense {
+  id          String   @id @default(uuid())
+  category    String
+  amount      Decimal  @db.Decimal(12, 2)
+  description String
+  date        DateTime // business date
+  createdAt   DateTime @default(now()) // system timestamp
+  
+  projectId   String
+  project     Project  @relation(fields: [projectId], references: [id])
+}
+
+model Employee {
+  id             String   @id @default(uuid())
+  
+  // -- Basic Info --
+  fullName       String
+  employeeId     String   @unique // Border Number / ID
+  mobileNumber   String?
+  gender         String?
+  nationality    String?
+  dateOfBirth    DateTime?
+  molId          String?
+  passportNumber String?
+  experience     String?
+  remarks        String?
+
+  iqamaNumber     String?
+  iqamaExpiryDate DateTime?
+
+  // -- Work Info --
+  companyId      String?
+  company        Company? @relation(fields: [companyId], references: [id])
+  
+  projectId      String?
+  project        Project? @relation(fields: [projectId], references: [id])
+  
+  category       String?
+  entryDate      DateTime?
+  workShift      String?
+  leavePolicy    String?
+  referenceRL    String?
+  
+  // -- Financial --
+  accountNumber  String?
+  basicSalary    Decimal?  @db.Decimal(10, 2)
+  salaries      Salary[]
+
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+// ... existing models ...
+
+model Salary {
+  id            String   @id @default(uuid())
+  
+  date          DateTime // The "Month of Salary"
+  workingDays   Int
+  overtimeHours Int
+  overtimeRate  Decimal
+  advance       Decimal
+  deductions    Decimal
+  
+  basicSalary   Decimal
+  totalAmount   Decimal
+
+  // Relations
+  employeeId    String
+  employee      Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+// ... existing models ...
+
+model Client {
+  id             String   @id @default(uuid())
+  companyName    String
+  vatNumber      String?
+  contactPerson  String?
+  contactDetails String?
+  address        String?
+  projects       Project[]
+  
+  
+  // Relations (Future proofing: You might want to link Projects to Clients later)
+  // projects Project[] 
+
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model Invoice {
+  id              String   @id @default(uuid())
+  invoiceNumber   String   @unique // e.g. BGTINV70703
+  
+  projectId       String
+  project         Project  @relation(fields: [projectId], references: [id])
+  
+  companyId       String
+  company         Company  @relation(fields: [companyId], references: [id])
+  
+  date            DateTime
+  startDate       DateTime?
+  endDate         DateTime?
+  
+  // Financials
+  totalBeforeVat  Decimal
+  vatAmount       Decimal
+  totalAmount     Decimal  // "Due Amount"
+
+  contactLabel    String?   
+  contactDetail   String?
+
+  // Relations
+  items           InvoiceItem[]
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model InvoiceItem {
+  id          String   @id @default(uuid())
+  description String
+  price       Decimal
+  quantity    Int
+  total       Decimal
+  
+  invoiceId   String
+  invoice     Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+}

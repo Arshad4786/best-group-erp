@@ -24,3 +24,86 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+
+
+@media print {
+
+    .print-hidden {
+    display: none !important;
+  }
+  
+  /* 1. PAPER SETUP */
+  @page {
+    size: A4;
+    margin: 10mm; /* Standard margin for printer headers */
+  }
+
+  /* 2. HIDE UI ELEMENTS (Sidebar, Buttons, Nav) */
+  aside, nav, header, button, .print\:hidden, .no-print {
+    display: none !important;
+  }
+
+  /* 3. RESET MAIN CONTAINER */
+  /* This ensures the white paper background takes over */
+  body, html, main, .min-h-screen {
+    background-color: white !important;
+    width: 100% !important;
+    height: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: visible !important;
+  }
+
+  /* 4. TEXT & COLOR CORRECTION */
+  /* Allow gray backgrounds (like table headers) to print */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+  
+  /* Ensure text is dark black for sharpness */
+  p, span, div, h1, h2, h3, h4, h5, h6, td, th {
+    color: #000000 !important;
+  }
+
+  /* 5. TABLE OPTIMIZATION (Fixing the "Congested" look) */
+  table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+  }
+
+  /* Add breathing room to table cells */
+  th, td {
+    padding: 10px 8px !important; /* Vertical spacing increased */
+    border: 1px solid #e2e8f0 !important; /* Light gray border */
+  }
+
+  /* Keep table header gray for readability */
+  thead tr, thead th {
+    background-color: #f1f5f9 !important; /* slate-100 */
+  }
+
+  /* Prevent rows from splitting across pages */
+  tr {
+    page-break-inside: avoid;
+  }
+
+  /* 6. REMOVE SHADOWS but KEEP LAYOUT */
+  /* Do NOT set display:block on flex items, or columns will collapse! */
+  .shadow-xl, .shadow-2xl, .shadow-lg, .shadow-sm {
+    box-shadow: none !important;
+  }
+
+  /* 7. LINKS */
+  a {
+    text-decoration: none !important;
+    color: black !important;
+  }
+  
+  /* 8. FOOTER POSITIONING */
+  /* Ensure footer stays at bottom if you have a specific footer class */
+  .mt-auto {
+    margin-top: auto !important;
+  }
+}
