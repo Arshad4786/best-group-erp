@@ -80,24 +80,24 @@ export default function DashboardLayout({
             Quotation Management
           </Link>
 
-          <Link href="/purchase-orders" className="flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-slate-50 hover:text-blue-600 rounded-xl transition-all font-medium group">
+          {/* <Link href="/purchase-orders" className="flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-slate-50 hover:text-blue-600 rounded-xl transition-all font-medium group">
             <ShoppingCart className="w-5 h-5 group-hover:scale-110 transition-transform" />
             Purchase Orders
-          </Link>
+          </Link> */}
 
-          <p className="px-4 text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2 mt-6">
+          {/* <p className="px-4 text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2 mt-6">
             Finance
-          </p>
+          </p> */}
 
-          <Link href="/commissions" className="flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-slate-50 hover:text-blue-600 rounded-xl transition-all font-medium group">
+          {/* <Link href="/commissions" className="flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-slate-50 hover:text-blue-600 rounded-xl transition-all font-medium group">
             <Wallet className="w-5 h-5 group-hover:scale-110 transition-transform" />
             Commission Management
-          </Link>
+          </Link> */}
 
-          <Link href="/expenses" className="flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-slate-50 hover:text-blue-600 rounded-xl transition-all font-medium group">
+          {/* <Link href="/expenses" className="flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-slate-50 hover:text-blue-600 rounded-xl transition-all font-medium group">
             <Receipt className="w-5 h-5 group-hover:scale-110 transition-transform" />
             Expense Management
-          </Link>
+          </Link> */}
 
           {/* --- HR SECTION --- */}
           <p className="px-4 text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2 mt-6">
