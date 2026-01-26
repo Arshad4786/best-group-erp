@@ -24,3 +24,4 @@ export default function CompanyActions({ id }: { id: string }) {
     </div>
   );
 }
+

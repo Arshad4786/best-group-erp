@@ -61,3 +61,17 @@ export async function createCompany(formData: FormData) {
   revalidatePath("/company");
   redirect("/company");
 }
+
+export async function deleteCompany(formData: FormData) {
+  const id = formData.get("id") as string;
+
+  if (!id) {
+    throw new Error("ID is required to delete a company");
+  }
+
+  await prisma.company.delete({
+    where: { id },
+  });
+
+  revalidatePath("/company"); // Update this path if your page is named differently (e.g. "/companies")
+}
