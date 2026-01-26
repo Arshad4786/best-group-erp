@@ -112,6 +112,7 @@ model Quotation {
   quotationBy    String   // Engineer Name
   contactNo      String?
   contactEmail   String?
+  engineer     String?
   
   // -- Calculated / Legacy --
   totalAmount    Decimal  @default(0) // For the dashboard stats
