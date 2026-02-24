@@ -35,6 +35,7 @@
 
 ![Sales Charts & Activities](./public/screenshots/dashboard2.jpeg)
 
+### System Logs
 
 ![System logs](./public/screenshots/dashboard3.jpeg)
 
@@ -42,9 +43,16 @@
 ## Add a new Subcompany
 ![Add a new Subcompany](./public/screenshots/addcompany.png)
 
+### Project Management
+
 ![Project Management](./public/screenshots/project.png)
 
+
+### Quotation Management with printing functionality
+
 ![Quotation Management with printing functionality](./public/screenshots/quotation.png)
+
+### Employee Management with printing functionality
 
 ![Employee Management with printing functionality](./public/screenshots/employee.png)
 
