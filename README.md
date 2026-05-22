@@ -2,7 +2,8 @@
 
 **Live:** [https://best-group-erp.vercel.app/](https://best-group-erp.vercel.app/)
 Login as : email : admin@bestgroup.com
-           password: admin
+           password: admin.           
+
 **Best Group ERP** is a cloud-first, modular Enterprise Resource Planning platform built to streamline business operations while ensuring regional compliance. It unifies Sales, HR, Projects, Finance, and Client management into a single, action-oriented dashboard — with special tooling for safe, client-side import of government-standard Mudad Excel files.
 
 ---
